@@ -1,0 +1,76 @@
+# Automatically build the project and run any configured tests for every push
+# and submitted pull request. This can help catch issues that only occur on
+# certain platforms or Java versions, and provides a first line of defence
+# against bad commits.
+
+name: build
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish to releases'
+        type: boolean
+        default: false
+        required: false
+  push:
+    branches: [master, main]
+    paths-ignore:
+      - '.github/workflows/**'
+      - '**/*.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+      - name: setup jdk
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+      - name: build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew build
+      - name: Upload jar
+        uses: actions/upload-artifact@v7
+        with:
+          name: Full Jar
+          archive: 'false'
+          path: build/libs/*-full.jar
+      - name: Upload sources jar
+        uses: actions/upload-artifact@v7
+        with:
+          name: Sources Jar
+          archive: 'false'
+          path: build/libs/*-sources.jar
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.inputs.release == 'true'
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: Full Jar
+          path: build/libs
+
+      - name: Publish release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
+        with:
+          files: build/libs/*-full.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
