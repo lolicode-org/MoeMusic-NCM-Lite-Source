@@ -42,16 +42,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew build
+      - name: Upload all jars
+        uses: actions/upload-artifact@v7
+        with:
+          name: All jars
+          path: build/libs/*.jar
       - name: Upload jar
         uses: actions/upload-artifact@v7
         with:
-          name: Full Jar
           archive: 'false'
           path: build/libs/*-full.jar
       - name: Upload sources jar
         uses: actions/upload-artifact@v7
         with:
-          name: Sources Jar
           archive: 'false'
           path: build/libs/*-sources.jar
 
@@ -65,7 +68,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
-          name: Full Jar
+          name: All jars
           path: build/libs
 
       - name: Publish release
