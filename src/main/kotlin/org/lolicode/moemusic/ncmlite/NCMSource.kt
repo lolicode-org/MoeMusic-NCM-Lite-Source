@@ -123,16 +123,16 @@ internal fun Song.toNcmTrackInfo(): TrackInfo {
         id = songId.takeIf(String::isNotBlank)?.let(::ncmSongTrackId).orEmpty(),
         title = name.orEmpty(),
         artists = artists.toNcmArtistInfos(),
-        durationMs = duration,
-        coverUrl = album?.picUrl?.takeIf(String::isNotBlank),
-        sourceId = NCMSource.SOURCE_ID,
-        album = album?.name?.takeIf(String::isNotBlank),
-        unavailableReason = unavailableReason(
-            removed = (privilege?.st ?: 0) < 0,
-            regionBlocked = privilege?.toast == true,
-            vipRequired = (privilege?.fee ?: 0) !in setOf(0, 8) && (privilege?.payed ?: 0) == 0,
-        ),
-    )
+        durationMs = duration) {
+            coverUrl = this@toNcmTrackInfo.album?.picUrl?.takeIf(String::isNotBlank)
+            sourceId = NCMSource.SOURCE_ID
+            album = this@toNcmTrackInfo.album?.name?.takeIf(String::isNotBlank)
+            unavailableReason = unavailableReason(
+                removed = (privilege?.st ?: 0) < 0,
+                regionBlocked = privilege?.toast == true,
+                vipRequired = (privilege?.fee ?: 0) !in setOf(0, 8) && (privilege?.payed ?: 0) == 0,
+            )
+        }
 }
 
 internal fun DjProgram.toNcmTrackInfo(): TrackInfo? {
@@ -145,27 +145,27 @@ internal fun DjProgram.toNcmTrackInfo(): TrackInfo? {
         artists = song.artists.toNcmArtistInfos().ifEmpty {
             dj?.toNcmArtistInfo()?.let(::listOf) ?: emptyList()
         },
-        durationMs = song.duration.takeIf { it > 0 } ?: duration,
-        coverUrl = coverUrl?.takeIf(String::isNotBlank)
-            ?: picUrl?.takeIf(String::isNotBlank)
-            ?: song.album?.picUrl?.takeIf(String::isNotBlank)
-            ?: channel?.coverUrl?.takeIf(String::isNotBlank),
-        sourceId = NCMSource.SOURCE_ID,
-        album = channel?.name?.takeIf(String::isNotBlank) ?: song.album?.name?.takeIf(String::isNotBlank),
-        lyricsFetched = true,
-    )
+        durationMs = song.duration.takeIf { it > 0 } ?: duration) {
+            coverUrl = this@toNcmTrackInfo.coverUrl?.takeIf(String::isNotBlank)
+                ?: this@toNcmTrackInfo.picUrl?.takeIf(String::isNotBlank)
+                        ?: song.album?.picUrl?.takeIf(String::isNotBlank)
+                        ?: channel?.coverUrl?.takeIf(String::isNotBlank)
+            sourceId = NCMSource.SOURCE_ID
+            album = this@toNcmTrackInfo.channel?.name?.takeIf(String::isNotBlank) ?: song.album?.name?.takeIf(String::isNotBlank)
+            lyricsFetched = true
+        }
 }
 
 internal fun TrackInfo.toNcmSelectionEntry(): SelectionEntry = SelectionEntry(
     selectionId = id,
     title = title,
     artists = artists,
-    durationMs = durationMs,
-    sourceId = sourceId,
-    album = album,
-    unavailableReason = unavailableReason,
-    kind = SelectionEntryKind.TRACK,
-)
+    durationMs = durationMs) {
+        sourceId = this@toNcmSelectionEntry.sourceId
+        album = this@toNcmSelectionEntry.album
+        unavailableReason = this@toNcmSelectionEntry.unavailableReason
+        kind = SelectionEntryKind.TRACK
+    }
 
 private fun TrackInfo.ncmSongIdOrNull(): String? =
     (parseNcmTrackKey(id) as? NCMTrackKey.Song)?.songId
@@ -338,7 +338,7 @@ class NCMSource(client: NeteaseClient, config: NCMConfig = NCMConfig()) : Identi
         }
     }
 
-    override suspend fun resolve(track: TrackInfo, submitter: MoeMusicUser?): PlaybackResource {
+    override suspend fun resolve(track: TrackInfo, submitter: MoeMusicUser?): PlaybackResolution {
         val currentState = state
         val client = currentState.client
         val key = parseNcmTrackKey(track.id) ?: throw SourceFormatException()
@@ -359,7 +359,21 @@ class NCMSource(client: NeteaseClient, config: NCMConfig = NCMConfig()) : Identi
                             ?: LocalizedText.key("error.moemusic.ncmlite.resolve.no_stream_url")
                     )
                 }
-                PlaybackResource(url)
+                PlaybackResolution(PlaybackResource(url)) {
+                    // In fact ncm won't give these data (for non-login user? or for the api endpoints used by us?). So why am I writing this...
+                    urlInfo.gain.takeIf { it != null && it != 0.0f }?.also { gain ->
+                        trackPatch = ResolvedTrackPatch {
+                            loudness = LoudnessInfo {
+                                integratedLufs = -18.0 - (gain.toDouble())  // IDK why but gathered data looks like to target -18.0
+                                urlInfo.peak.takeIf { it != null && it != 0.0f }?.also {
+                                    peak = PeakInfo(it.toDouble()) {
+                                        kind = PeakKind.UNKNOWN
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
             is ApiResult.Error -> throw apiErrorToException(result)
         }
@@ -435,15 +449,15 @@ class NCMSource(client: NeteaseClient, config: NCMConfig = NCMConfig()) : Identi
 
     private suspend fun enrichLyrics(client: NeteaseClient, songId: String, track: TrackInfo): TrackInfo {
         return when (val result = callUpstream("get song lyric", client::getSongLyric, songId)) {
-            is ApiResult.Success -> track.copy(
-                lyricLrc = result.data.lrc?.lyric?.takeIf { it.isNotBlank() },
+            is ApiResult.Success -> track.copy {
+                lyricLrc = result.data.lrc?.lyric?.takeIf { it.isNotBlank() }
                 secondaryLyricLrc = result.data.tlyric?.lyric?.takeIf { it.isNotBlank() }
-                    ?: result.data.romalrc?.lyric?.takeIf { it.isNotBlank() },
-                lyricsFetched = true,
-            )
+                    ?: result.data.romalrc?.lyric?.takeIf { it.isNotBlank() }
+                lyricsFetched = true
+            }
             is ApiResult.Error -> {
                 logger.warn("NCM getSongLyric failed for {}: {}", songId, result.message)
-                track.copy(lyricsFetched = true)
+                track.copy { lyricsFetched = true }
             }
         }
     }

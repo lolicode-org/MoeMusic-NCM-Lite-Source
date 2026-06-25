@@ -98,9 +98,9 @@ class NCMSourceTest {
             id = "abc",
             title = "Test",
             artists = listOf("Artist").toArtistInfos(),
-            durationMs = 1000,
-            sourceId = NCMSource.SOURCE_ID,
-        )
+            durationMs = 1000) {
+                sourceId = NCMSource.SOURCE_ID
+            }
 
         val error = kotlin.runCatching {
             runBlocking { source.resolve(track) }

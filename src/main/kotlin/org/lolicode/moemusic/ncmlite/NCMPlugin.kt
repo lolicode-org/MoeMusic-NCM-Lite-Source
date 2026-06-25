@@ -46,8 +46,8 @@ object NCMPlugin : Plugin {
             updater = { config, value -> config.copy(maxSoundQuality = value) },
         )
     }
-    override val version: String = "1.0.0"
-    override val supportedApiVersions: String = ">=1.0.0 <2.0.0"
+    override val version: String = "1.1.0"
+    override val supportedApiVersions: String = ">=2.0.0 <3.0.0"
 
     // -------------------------------------------------------------------------
     // MoeMusic Plugin lifecycle
