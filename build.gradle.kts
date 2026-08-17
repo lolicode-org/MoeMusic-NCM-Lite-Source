@@ -15,8 +15,34 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven {
-        name = "Lolicode on Codeberg"
-        url = uri("https://codeberg.org/api/packages/lolicode/maven")
+        name = "Lolicode Releases"
+        url = uri("https://maven.lolicode.org/releases")
+        content {
+            includeGroupByRegex("org\\.lolicode.*")
+        }
+    }
+    maven {
+        name = "Lolicode Snapshots"
+        url = uri("https://maven.lolicode.org/snapshots")
+        content {
+            includeGroupByRegex("org\\.lolicode.*")
+        }
+    }
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/lolicode-org/MoeMusic")
+        credentials {
+            username = providers.gradleProperty("gpr.user")
+                .orElse(providers.environmentVariable("GITHUB_ACTOR"))
+                .orElse("")
+                .get()
+            password = providers.gradleProperty("gpr.key")
+                .orElse(providers.environmentVariable("GITHUB_PACKAGES_TOKEN"))
+                .orElse(providers.environmentVariable("PACKAGES_READ_TOKEN"))
+                .orElse(providers.environmentVariable("GITHUB_TOKEN"))
+                .orElse("")
+                .get()
+        }
         content {
             includeGroupByRegex("org\\.lolicode.*")
         }
@@ -25,16 +51,16 @@ repositories {
         name = "GitHubPackages NCM API"
         url = uri("https://maven.pkg.github.com/lolicode-org/NCM-API-Lite-Kt")
         credentials {
-            username = System.getenv("GITHUB_ACTOR").orEmpty()
-            password = System.getenv("GITHUB_TOKEN").orEmpty()
-        }
-    }
-    maven {
-        name = "GitHubPackages MoeMusic"
-        url = uri("https://maven.pkg.github.com/lolicode-org/MoeMusic")
-        credentials {
-            username = System.getenv("GITHUB_ACTOR").orEmpty()
-            password = System.getenv("GITHUB_TOKEN").orEmpty()
+            username = providers.gradleProperty("gpr.user")
+                .orElse(providers.environmentVariable("GITHUB_ACTOR"))
+                .orElse("")
+                .get()
+            password = providers.gradleProperty("gpr.key")
+                .orElse(providers.environmentVariable("GITHUB_PACKAGES_TOKEN"))
+                .orElse(providers.environmentVariable("PACKAGES_READ_TOKEN"))
+                .orElse(providers.environmentVariable("GITHUB_TOKEN"))
+                .orElse("")
+                .get()
         }
     }
 }
