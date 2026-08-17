@@ -39,24 +39,15 @@ repositories {
 }
 
 dependencies {
-    // MoeMusic API (resolved via composite build from parent :api project)
+    // MoeMusic API transitively provides the guaranteed runtime baseline:
+    // Kotlin stdlib, kotlinx-coroutines, kotlinx-serialization (core + json), and SLF4J API.
     compileOnly("org.lolicode.moemusic:api:${providers.gradleProperty("plugin_api_version").get()}")
-
-    // kotlinx-serialization — runtime provided transitively by neteasemusicapilitekt; needed at compile time for @Serializable
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:${providers.gradleProperty("kotlinx_serialization_version").get()}")
 
     // Netease Cloud Music API wrapper
     implementation("org.lolicode:neteasemusicapilitekt:${providers.gradleProperty("ncm_api_version").get()}")
 
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${providers.gradleProperty("coroutines_version").get()}")
-
-    // SLF4J — runtime provided by Minecraft/the loader on platform modules
-    compileOnly("org.slf4j:slf4j-api:${providers.gradleProperty("slf4j_version").get()}")
-
     testImplementation(kotlin("test"))
     testImplementation("org.lolicode.moemusic:api:${providers.gradleProperty("plugin_api_version").get()}")
-    testImplementation("org.slf4j:slf4j-api:${providers.gradleProperty("slf4j_version").get()}")
 }
 
 tasks.withType<JavaCompile>().configureEach {
