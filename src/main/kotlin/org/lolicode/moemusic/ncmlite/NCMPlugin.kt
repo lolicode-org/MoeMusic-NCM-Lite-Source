@@ -7,13 +7,19 @@ import org.lolicode.ncmapilitekt.model.SongLevel
 
 object NCMPlugin : Plugin {
 
-    const val MOD_ID = "moemusic-ncmlite-source"
+    const val PLUGIN_ID = "moemusic-ncmlite-source"
+
+    /**
+     * Minecraft Mod ID for Fabric, Forge, and NeoForge loaders.
+     * Must be lowercase alphanumeric with underscores (`^[a-z][a-z0-9_]{1,63}$`).
+     */
+    const val MOD_ID = "moemusic_ncmlite_source"
 
     // -------------------------------------------------------------------------
     // MoeMusic Plugin identity
     // -------------------------------------------------------------------------
 
-    override val id: String = MOD_ID
+    override val id: String = PLUGIN_ID
     override val displayName: LocalizedText = LocalizedText.key("plugin.moemusic.ncmlite")
     override val configSpec: PluginConfigSpec<NCMConfig> = pluginConfigSpec(::NCMConfig) {
         string(
@@ -46,7 +52,7 @@ object NCMPlugin : Plugin {
             updater = { config, value -> config.copy(maxSoundQuality = value) },
         )
     }
-    override val version: String = "1.2.0"
+    override val version: String = "1.3.0"
     override val supportedApiVersions: String = ">=2.2.0 <3.0.0"
 
     // -------------------------------------------------------------------------
