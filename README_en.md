@@ -23,7 +23,7 @@ This plugin requires the MoeMusic mod to be installed on the Minecraft server (o
 
 1. Obtain the plugin JAR file from the [GitHub Releases](https://github.com/lolicode-org/MoeMusic-NCM-Lite-Source/releases) (e.g., `moemusic-ncmlite-source-<version>-full.jar`).
    - *If building from source*: Run `./gradlew build` in the project root. The resulting JAR file will be located in the `build/libs/` directory (make sure to choose the one with the `-full` suffix).
-2. Place the JAR file into the `config/moemusic/plugins/` directory of your Minecraft server or client instance.
+2. Place the JAR file into the `mods` or `config/moemusic/plugins/` directory of your Minecraft server or client instance.
 3. Start or restart the Minecraft server/client.
 
 ---

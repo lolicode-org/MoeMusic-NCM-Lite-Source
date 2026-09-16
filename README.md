@@ -23,7 +23,7 @@
 
 1. 从 [GitHub Releases](https://github.com/lolicode-org/MoeMusic-NCM-Lite-Source/releases) 获取插件的 JAR 文件（例如 `moemusic-ncmlite-source-<version>-full.jar`）。
    - *若从源码编译*：在项目根目录下运行 `./gradlew build`。编译生成的 JAR 文件位于 `build/libs/` 目录下（请选择带有 `-full` 后缀的文件）。
-2. 将 JAR 文件放入 Minecraft 服务端（单人模式下为客户端）的 `config/moemusic/plugins/` 目录中。
+2. 将 JAR 文件放入 Minecraft 服务端（单人模式下为客户端）的 `mods` 或 `config/moemusic/plugins/` 目录中。
 3. 启动或重启 Minecraft 服务器/客户端。
 
 ---
