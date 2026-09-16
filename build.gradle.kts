@@ -2,14 +2,15 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "2.4.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
+    id("org.jetbrains.kotlin.jvm") version "2.4.20"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.20"
     id("com.gradleup.shadow") version "9.6.1"
     id("idea")
 }
 
 version = providers.gradleProperty("version").get()
 group = providers.gradleProperty("maven_group").get()
+val projectName = project.name
 
 repositories {
     mavenLocal()
@@ -160,12 +161,12 @@ tasks.named<ProcessResources>("processPlatformResources") {
 }
 
 tasks.jar {
-    inputs.property("projectName", project.name)
+    inputs.property("projectName", projectName)
 
     from(sourceSets["platform"].output)
 
     from("LICENSE") {
-        rename { "${it}_${project.name}" }
+        rename { "${it}_$projectName" }
     }
 }
 
@@ -175,6 +176,7 @@ tasks.named<Jar>("sourcesJar") {
 
 tasks.shadowJar {
     archiveClassifier.set("full")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     from(sourceSets["platform"].output)
 
