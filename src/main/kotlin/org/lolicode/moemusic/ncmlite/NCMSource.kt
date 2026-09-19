@@ -360,11 +360,10 @@ class NCMSource(client: NeteaseClient, config: NCMConfig = NCMConfig()) : Identi
                     )
                 }
                 PlaybackResolution(PlaybackResource(url)) {
-                    // In fact ncm won't give these data (for non-login user? or for the api endpoints used by us?). So why am I writing this...
                     urlInfo.gain.takeIf { it != null && it != 0.0f }?.also { gain ->
                         trackPatch = ResolvedTrackPatch {
                             loudness = LoudnessInfo {
-                                integratedLufs = -18.0 - (gain.toDouble())  // IDK why but gathered data looks like to target -18.0
+                                integratedLufs = -18.0 - (gain.toDouble())
                                 urlInfo.peak.takeIf { it != null && it != 0.0f }?.also {
                                     peak = PeakInfo(it.toDouble()) {
                                         kind = PeakKind.UNKNOWN
